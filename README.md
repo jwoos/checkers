@@ -1,2 +1,2 @@
-# go_checkers
+# Chcekrs
 Checkers engine in Go
