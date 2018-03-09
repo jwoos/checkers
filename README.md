@@ -1,4 +1,4 @@
-# Chcekrs
+# Checkers
 Checkers engine in Go
 
 ## Board
