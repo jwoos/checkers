@@ -52,7 +52,7 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 		}
 
 		for i := 0; i < rule.RowsToFill; i++ {
-			for j := 0; j < rule.RowsToFill; j++ {
+			for j := 0; j < rule.Columns; j++ {
 				if (rule.Rows - i%2) == (j % 2) {
 					coordinate := NewCoordinate(rule.Rows-i, j)
 					state.Board[rule.Rows-i][j] = NewPiece(false, coordinate, top, 1)
