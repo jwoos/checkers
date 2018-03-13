@@ -1,20 +1,18 @@
 package checkers
 
-
 import (
 	"fmt"
 )
 
-
 type Coordinate struct {
-	Row uint
-	Column uint
+	Row    int
+	Column int
 }
 
-func NewCoordinate(row uint, column uint) *Coordinate {
+func NewCoordinate(row int, column int) *Coordinate {
 	coord := Coordinate{
-		Row: row,
-		Column: column
+		Row:    row,
+		Column: column,
 	}
 
 	return &coord
@@ -33,10 +31,19 @@ func (coord *Coordinate) SetCoordinate(source *Coordinate) {
 	coord.Column = source.Column
 }
 
-func (coord *Coordinate) SetRow(row uint) {
+func (coord *Coordinate) ApplyCoordinate(source *Coordinate) {
+	coord.Row += source.Row
+	coord.Column += source.Column
+}
+
+func (coord *Coordinate) SetRow(row int) {
 	coord.Row = row
 }
 
-func (coord *Coordinate) SetColumn(column uint) {
+func (coord *Coordinate) SetColumn(column int) {
 	coord.Column = column
+}
+
+func (coord *Coordinate) Diagonal(direction Coordinate) *Coordinate {
+	return NewCoordinate(coord.Row + direction.Row, coord.Column + direction.Column)
 }

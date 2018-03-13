@@ -1,6 +1,5 @@
 package checkers
 
-
 type BoundsError struct {
 	Message string
 }

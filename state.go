@@ -1,12 +1,11 @@
 package checkers
 
-
 import (
 	"fmt"
 	"strings"
 )
 
-
+// row major
 type State struct {
 	Rules Rule
 
@@ -15,8 +14,8 @@ type State struct {
 
 func NewState(rule Rule) *State {
 	state := State{
-		Rules: rule
-		Board: make([][]*Piece, rows)
+		Rules: rule,
+		Board: make([][]*Piece, rows),
 	}
 
 	for i := 0; i < rows; i++ {
@@ -29,8 +28,8 @@ func NewState(rule Rule) *State {
 func (state *State) String() string {
 	var str strings.Builder
 
-	for i := 0; i < state.Rules.Rows {
-		for j := 0; j < state.Rules.Columns {
+	for i := 0; i < state.Rules.Rows; i++ {
+		for j := 0; j < state.Rules.Columns; j++ {
 			if state.Board[i][j] != nil {
 				if state.Board[i][j].Side {
 					str.WriteRune('x')
@@ -52,7 +51,7 @@ func (state *State) GoString() string {
 	return state.String()
 }
 
-func (state *State) ValidateMove(from Coordinate, to Coordinate) error {
+func (state *State) ValidateMove(from *Coordinate, to *Coordinate) error {
 	// check bounds
 	if to.Row < 0 || to.Row > state.Rules.Columns {
 		return NewBoundsError(fmt.Sprintf("cannot move from %#v to %#v - x is out of range", from, to))
@@ -67,10 +66,11 @@ func (state *State) ValidateMove(from Coordinate, to Coordinate) error {
 		return NewMovementError("the position is occupied")
 	}
 
+	// check that if there is a valid captured state, it's taken
 	return nil
 }
 
-func (state *State) MovePiece(from Coordinate, to Coordinate) error {
+func (state *State) MovePiece(from *Coordinate, to *Coordinate) error {
 	err := state.ValidateMove(from, to)
 	if err != nil {
 		return err
@@ -82,5 +82,19 @@ func (state *State) MovePiece(from Coordinate, to Coordinate) error {
 	return nil
 }
 
-func (state *State) PossibleMoves(from Coordinate, to Coordinate) []*State {
+func (state *State) PossibleMoves(piece *Piece) map[*Coordinate][]*Coordinate {
+	diagonalMoves := piece.Diagonal()
+
+	for k, v := range set {
+		if v == nil {
+			continue
+		}
+
+		err := state.ValidateMove()
+	}
+
+	if state.Rules.ConsecutiveJumps {
+	}
+
+	return set
 }
