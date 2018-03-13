@@ -131,7 +131,7 @@ func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[*Coordinate]*
 		moves[NewCoordinate(-dir, -1)] = nil
 	}
 
-	for direction, nil := range moves {
+	for direction, _ := range moves {
 		target := NewCoordinate(piece.Coord.Row+direction.Row, piece.Coord.Column+direction.Column)
 
 		// check out of bounds
