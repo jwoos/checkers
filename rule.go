@@ -1,11 +1,19 @@
 package checkers
 
+const (
+	BOTTOM int = iota
+	TOP    int = iota
+)
+
 type Rule struct {
 	Rows    int
 	Columns int
 
 	// who goes first
 	First int
+
+	// to which direction does first go
+	Side int
 
 	// how many rows should be filled
 	RowsToFill int
@@ -20,11 +28,12 @@ type Rule struct {
 	LoseOnNoMoves bool
 }
 
-func NewRule(rows int, columns int, first int, fill int, king bool, multiple bool, moveLoss bool) Rule {
+func NewRule(rows int, columns int, first int, side int, fill int, king bool, multiple bool, moveLoss bool) Rule {
 	rule := Rule{
 		Rows:             rows,
 		Columns:          columns,
 		First:            first,
+		Side:             side,
 		RowsToFill:       fill,
 		BecomesKing:      king,
 		ConsecutiveJumps: multiple,

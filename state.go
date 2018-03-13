@@ -18,7 +18,7 @@ type State struct {
 	Turn  int
 }
 
-func NewState(rule Rule) *State {
+func NewState(rule Rule, instantiateBoard bool) *State {
 	state := State{
 		Rules: rule,
 		Board: make([][]*Piece, rule.Rows),
@@ -27,6 +27,43 @@ func NewState(rule Rule) *State {
 
 	for i := 0; i < rule.Rows; i++ {
 		state.Board[i] = make([]*Piece, rule.Columns)
+	}
+
+	if instantiateBoard {
+		var blackSide int
+		var redSide int
+		var top int
+		var bottom int
+
+		if rule.First == BLACK {
+			blackSide = rule.Side
+			redSide = redSide ^ BLACK
+		} else {
+			redSide = rule.Side
+			blackSide = redSide ^ BLACK
+		}
+
+		if blackSide == TOP {
+			top = BLACK
+			bottom = RED
+		} else {
+			top = RED
+			bottom = BLACK
+		}
+
+		for i := 0; i < rule.RowsToFill; i++ {
+			for j := 0; j < rule.RowsToFill; j++ {
+				if (rule.Rows - i%2) == (j % 2) {
+					coordinate := NewCoordinate(rule.Rows-i, j)
+					state.Board[rule.Rows-i][j] = NewPiece(false, coordinate, top, 1)
+				}
+
+				if (i % 2) == (j % 2) {
+					coordinate := NewCoordinate(i, j)
+					state.Board[i][j] = NewPiece(false, coordinate, bottom, 1)
+				}
+			}
+		}
 	}
 
 	return &state
