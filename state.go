@@ -1,7 +1,6 @@
 package checkers
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -72,8 +71,8 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 func (state *State) String() string {
 	var str strings.Builder
 
-	for i := 0; i < state.Rules.Rows; i++ {
-		for j := state.Rules.Columns - 1; j >= 0; j-- {
+	for i := state.Rules.Columns - 1; i >= 0; i-- {
+		for j := 0; j < state.Rules.Columns; j++ {
 			if state.Board[i][j] != nil {
 				if state.Board[i][j].Type == BLACK {
 					str.WriteRune('b')
@@ -95,45 +94,49 @@ func (state *State) GoString() string {
 	return state.String()
 }
 
-func (state *State) ValidateMove(piece *Piece, to *Coordinate) error {
-	from := piece.Coord
+func (state *State) ValideMove(piece *Piece, to *Coordinate) bool {
+	//from := piece.Coord
 
 	// check bounds
 	if to.Row < 0 || to.Row > state.Rules.Columns {
-		return NewBoundsError(fmt.Sprintf("cannot move from %#v to %#v - x is out of range", from, to))
+		return false
 	}
 
 	if to.Column < 0 || to.Column > state.Rules.Rows {
-		return NewBoundsError(fmt.Sprintf("cannot move from %#v to %#v - y is out of range", from, to))
+		return false
 	}
 
 	// check the space is empty
 	if state.Board[to.Row][to.Column] != nil {
-		return NewMovementError("the position is occupied")
+		return false
 	}
 
 	// check that if there is a valid captured state, it's taken
-	return nil
+	return true
 }
 
 func (state *State) MovePiece(piece *Piece, application *Coordinate) error {
-	err := state.ValidateMove(piece, application)
-	if err != nil {
-		return err
+	err := state.ValideMove(piece, application)
+	if err {
+		return NewMovementError("Invalid move")
 	}
 
+	state.Board[piece.Coord.Row][piece.Coord.Column] = nil
 	piece.ApplyCoordinate(application)
+	state.Board[piece.Coord.Row][piece.Coord.Column] = piece
 
 	return nil
 }
 
 func (state *State) MovePieceTo(piece *Piece, to *Coordinate) error {
-	err := state.ValidateMove(piece, to)
-	if err != nil {
-		return err
+	err := state.ValideMove(piece, to)
+	if err {
+		return NewMovementError("Invalid move")
 	}
 
+	state.Board[piece.Coord.Row][piece.Coord.Column] = nil
 	piece.SetCoordinate(to)
+	state.Board[piece.Coord.Row][piece.Coord.Column] = piece
 
 	return nil
 }
@@ -152,20 +155,20 @@ func (state *State) CheckBound(coord *Coordinate) bool {
 	return okay
 }
 
-func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[*Coordinate]*Coordinate {
-	moves := make(map[*Coordinate]*Coordinate)
+func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[Coordinate]*Coordinate {
+	moves := make(map[Coordinate]*Coordinate)
 	dir := piece.Direction
 
 	if dir == 0 {
 		dir = 1
 	}
 
-	moves[NewCoordinate(dir, 1)] = nil
-	moves[NewCoordinate(dir, -1)] = nil
+	moves[Coordinate{Row: dir, Column: 1}] = nil
+	moves[Coordinate{Row: dir, Column: -1}] = nil
 
 	if piece.King {
-		moves[NewCoordinate(-dir, 1)] = nil
-		moves[NewCoordinate(-dir, -1)] = nil
+		moves[Coordinate{Row: -dir, Column: 1}] = nil
+		moves[Coordinate{Row: -dir, Column: -1}] = nil
 	}
 
 	for direction, _ := range moves {

@@ -1,6 +1,7 @@
 package checkers
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -56,6 +57,32 @@ func TestPossibleMoves(t *testing.T) {
 				if v != nil {
 					innerT.Errorf("Expected nil but got %v", v)
 				}
+			}
+		},
+	)
+}
+
+func TestMovePiece(t *testing.T) {
+	rule := NewRule(8, 8, BLACK, TOP, 3, false, false, false)
+	state := NewState(rule, true)
+
+	t.Run(
+		"Moves piece",
+		func(innerT *testing.T) {
+			fmt.Println(state.PossibleMoves(state.Board[2][0], false))
+			err := state.MovePiece(state.Board[2][0], NewCoordinate(1, 1))
+			if err != nil {
+				innerT.Error(err)
+				return
+			}
+			fmt.Printf("%#v", state)
+
+			if state.Board[2][0] != nil {
+				innerT.Errorf("Piece still at original location %v", state)
+			}
+
+			if state.Board[3][1] == nil {
+				innerT.Errorf("Piece not at new location")
 			}
 		},
 	)
