@@ -53,9 +53,9 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 
 		for i := 0; i < rule.RowsToFill; i++ {
 			for j := 0; j < rule.Columns; j++ {
-				if (rule.Rows - i%2) == (j % 2) {
-					coordinate := NewCoordinate(rule.Rows-i, j)
-					state.Board[rule.Rows-i][j] = NewPiece(false, coordinate, top, 1)
+				if ((rule.Rows - 1 - i) % 2) == (j % 2) {
+					coordinate := NewCoordinate(rule.Rows - 1 - i, j)
+					state.Board[rule.Rows - 1 - i][j] = NewPiece(false, coordinate, top, -1)
 				}
 
 				if (i % 2) == (j % 2) {
@@ -73,12 +73,12 @@ func (state *State) String() string {
 	var str strings.Builder
 
 	for i := 0; i < state.Rules.Rows; i++ {
-		for j := 0; j < state.Rules.Columns; j++ {
+		for j := state.Rules.Columns - 1; j >= 0; j-- {
 			if state.Board[i][j] != nil {
-				if state.Board[i][j].Direction == 1 {
-					str.WriteRune('x')
+				if state.Board[i][j].Type == BLACK {
+					str.WriteRune('b')
 				} else {
-					str.WriteRune('o')
+					str.WriteRune('r')
 				}
 			} else {
 				str.WriteRune('.')
