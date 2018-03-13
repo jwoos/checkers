@@ -22,7 +22,7 @@ func NewState(rule Rule) *State {
 	state := State{
 		Rules: rule,
 		Board: make([][]*Piece, rule.Rows),
-		Turn:  turn,
+		Turn:  rule.First,
 	}
 
 	for i := 0; i < rule.Rows; i++ {
