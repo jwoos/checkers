@@ -18,7 +18,7 @@ type State struct {
 	Turn  int
 }
 
-func NewState(rule Rule, turn int) *State {
+func NewState(rule Rule) *State {
 	state := State{
 		Rules: rule,
 		Board: make([][]*Piece, rule.Rows),
