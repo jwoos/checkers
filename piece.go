@@ -1,23 +1,21 @@
 package checkers
 
-
 import (
 	"fmt"
 )
 
-
 type Piece struct {
 	Coord     *Coordinate
-	Direction *Coordinate
-
-	King bool
+	Direction int
+	Type      int
+	King      bool
 }
 
-
-func NewPiece(king bool, coord *Coordinate, direction *Coordinate) *Piece {
+func NewPiece(king bool, coord *Coordinate, t int, direction int) *Piece {
 	piece := Piece{
 		Coord:     coord,
 		Direction: direction,
+		Type:      t,
 		King:      king,
 	}
 
@@ -28,7 +26,7 @@ func (piece *Piece) String() string {
 	var side string
 	var pieceType string
 
-	if piece.Direction.Row == 1 {
+	if piece.Direction == 1 {
 		side = "red"
 	} else {
 		side = "black"
@@ -51,12 +49,20 @@ func (piece *Piece) SetKing(king bool) {
 	piece.King = king
 }
 
-func (piece *Piece) SetDirection(direction *Coordinate) {
+func (piece *Piece) SetType(t int) {
+	piece.Type = t
+}
+
+func (piece *Piece) SetDirection(direction int) {
 	piece.Direction = direction
 }
 
-func (piece *Piece) SetCoord(coord *Coordinate) {
+func (piece *Piece) SetCoordinate(coord *Coordinate) {
 	piece.Coord = coord
+}
+
+func (piece *Piece) ApplyCoordinate(coord *Coordinate) {
+	piece.Coord.ApplyCoordinate(coord)
 }
 
 func (piece *Piece) SetRow(row int) {

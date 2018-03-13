@@ -1,10 +1,8 @@
 package checkers
 
-
 import (
 	"testing"
 )
-
 
 func TestNewRule(t *testing.T) {
 	rule := NewRule(10, 10, false, false, false)

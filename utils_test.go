@@ -1,10 +1,8 @@
 package checkers
 
-
 import (
 	"testing"
 )
-
 
 func TestMin(t *testing.T) {
 	cases := [][]int{

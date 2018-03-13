@@ -1,8 +1,7 @@
 package checkers
 
-
 type Rule struct {
-	Rows int
+	Rows    int
 	Columns int
 
 	// should the piece become a king when it reaches the end

@@ -5,17 +5,24 @@ import (
 	"strings"
 )
 
+const (
+	RED   int = iota
+	BLACK int = iota
+)
+
 // row major
 type State struct {
 	Rules Rule
 
 	Board [][]*Piece
+	Turn  int
 }
 
-func NewState(rule Rule) *State {
+func NewState(rule Rule, turn int) *State {
 	state := State{
 		Rules: rule,
 		Board: make([][]*Piece, rule.Rows),
+		Turn:  turn,
 	}
 
 	for i := 0; i < rule.Rows; i++ {
@@ -31,7 +38,7 @@ func (state *State) String() string {
 	for i := 0; i < state.Rules.Rows; i++ {
 		for j := 0; j < state.Rules.Columns; j++ {
 			if state.Board[i][j] != nil {
-				if state.Board[i][j].Direction.Row == 1 {
+				if state.Board[i][j].Direction == 1 {
 					str.WriteRune('x')
 				} else {
 					str.WriteRune('o')
@@ -51,7 +58,9 @@ func (state *State) GoString() string {
 	return state.String()
 }
 
-func (state *State) ValidateMove(from *Coordinate, to *Coordinate) error {
+func (state *State) ValidateMove(piece *Piece, to *Coordinate) error {
+	from := piece.Coord
+
 	// check bounds
 	if to.Row < 0 || to.Row > state.Rules.Columns {
 		return NewBoundsError(fmt.Sprintf("cannot move from %#v to %#v - x is out of range", from, to))
@@ -70,16 +79,83 @@ func (state *State) ValidateMove(from *Coordinate, to *Coordinate) error {
 	return nil
 }
 
-func (state *State) MovePiece(from *Coordinate, to *Coordinate) error {
-	err := state.ValidateMove(from, to)
+func (state *State) MovePiece(piece *Piece, application *Coordinate) error {
+	err := state.ValidateMove(piece, application)
 	if err != nil {
 		return err
 	}
 
-	piece := state.Board[from.Row][from.Column]
-	piece.SetCoord(to)
+	piece.ApplyCoordinate(application)
 
 	return nil
 }
 
-//func (state *State) PossibleMoves(piece *Piece) map[*Coordinate][]*Coordinate {}
+func (state *State) MovePieceTo(piece *Piece, to *Coordinate) error {
+	err := state.ValidateMove(piece, to)
+	if err != nil {
+		return err
+	}
+
+	piece.SetCoordinate(to)
+
+	return nil
+}
+
+func (state *State) CheckBound(coord *Coordinate) bool {
+	okay := true
+
+	if coord.Row < 0 || coord.Row >= state.Rules.Rows {
+		okay = false
+	}
+
+	if coord.Column < 0 || coord.Column >= state.Rules.Columns {
+		okay = false
+	}
+
+	return okay
+}
+
+func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[*Coordinate]*Coordinate {
+	moves := make(map[*Coordinate]*Coordinate)
+	dir := piece.Direction
+
+	if dir == 0 {
+		dir = 1
+	}
+
+	moves[NewCoordinate(dir, 1)] = nil
+	moves[NewCoordinate(dir, -1)] = nil
+
+	if piece.King {
+		moves[NewCoordinate(-dir, 1)] = nil
+		moves[NewCoordinate(-dir, -1)] = nil
+	}
+
+	for direction, nil := range moves {
+		target := NewCoordinate(piece.Coord.Row+direction.Row, piece.Coord.Column+direction.Column)
+
+		// check out of bounds
+		if !state.CheckBound(target) {
+			continue
+		}
+
+		// check the space is empty
+		if state.Board[target.Row][target.Column] != nil {
+			if (state.Board[target.Row][target.Column].Type ^ piece.Type) == 1 {
+				jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
+
+				if !state.CheckBound(jump) {
+					continue
+				}
+
+				moves[direction] = jump
+			}
+		}
+
+		if !jumpOnly {
+			moves[direction] = target
+		}
+	}
+
+	return moves
+}

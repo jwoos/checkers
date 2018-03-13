@@ -1,6 +1,5 @@
 package checkers
 
-
 import (
-	"testing"
+	//"testing"
 )
