@@ -4,6 +4,12 @@ type Rule struct {
 	Rows    int
 	Columns int
 
+	// who goes first
+	First int
+
+	// how many rows should be filled
+	RowsToFill int
+
 	// should the piece become a king when it reaches the end
 	BecomesKing bool
 
@@ -14,10 +20,12 @@ type Rule struct {
 	LoseOnNoMoves bool
 }
 
-func NewRule(rows int, columns int, king bool, multiple bool, moveLoss bool) Rule {
+func NewRule(rows int, columns int, first int, fill int, king bool, multiple bool, moveLoss bool) Rule {
 	rule := Rule{
 		Rows:             rows,
 		Columns:          columns,
+		First:            first,
+		RowsToFill:       fill,
 		BecomesKing:      king,
 		ConsecutiveJumps: multiple,
 		LoseOnNoMoves:    moveLoss,
