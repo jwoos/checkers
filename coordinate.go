@@ -43,7 +43,3 @@ func (coord *Coordinate) SetRow(row int) {
 func (coord *Coordinate) SetColumn(column int) {
 	coord.Column = column
 }
-
-func (coord *Coordinate) Diagonal(direction Coordinate) *Coordinate {
-	return NewCoordinate(coord.Row + direction.Row, coord.Column + direction.Column)
-}

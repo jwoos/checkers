@@ -1,0 +1,6 @@
+package checkers
+
+
+import (
+	"testing"
+)

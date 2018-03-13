@@ -1,8 +1,9 @@
 package checkers
 
+
 type Rule struct {
-	Rows    uint
-	Columns uint
+	Rows int
+	Columns int
 
 	// should the piece become a king when it reaches the end
 	BecomesKing bool
@@ -14,8 +15,8 @@ type Rule struct {
 	LoseOnNoMoves bool
 }
 
-func NewRule(rows uint, columns uint, king bool, multiple bool, moveLoss bool) Rule {
-	rule := Rules{
+func NewRule(rows int, columns int, king bool, multiple bool, moveLoss bool) Rule {
+	rule := Rule{
 		Rows:             rows,
 		Columns:          columns,
 		BecomesKing:      king,

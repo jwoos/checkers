@@ -1,8 +1,10 @@
 package checkers
 
+
 import (
 	"fmt"
 )
+
 
 type Piece struct {
 	Coord     *Coordinate
@@ -10,6 +12,7 @@ type Piece struct {
 
 	King bool
 }
+
 
 func NewPiece(king bool, coord *Coordinate, direction *Coordinate) *Piece {
 	piece := Piece{
@@ -62,30 +65,4 @@ func (piece *Piece) SetRow(row int) {
 
 func (piece *Piece) SetColumn(column int) {
 	piece.Coord.Column = column
-}
-
-func (piece *Piece) Diagonal() map[*Coordinate][]*Coordinate {
-	set := make(map[*Coordinate][]*Coordinate, 4)
-
-	for i := -1; i <= 1; i++ {
-		if i == 0 {
-			continue
-		}
-
-		for j := -1; j <= 1; j++ {
-			if j == 0 {
-				continue
-			}
-
-			set[Coordinate{Row: i, Column: j}] = nil
-		}
-	}
-
-	for k, v := range set {
-		if piece.King || piece.Direction.Row == k.Row {
-			set[k] = piece.Coord.Diagonal(k)
-		}
-	}
-
-	return set
 }

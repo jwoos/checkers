@@ -8,7 +8,7 @@ func handleError(err error) {
 	log.Println(err)
 }
 
-func min(a int, b int) {
+func min(a int, b int) int {
 	if a > b {
 		return b
 	} else {
@@ -16,7 +16,7 @@ func min(a int, b int) {
 	}
 }
 
-func max(a int, b int) {
+func max(a int, b int) int {
 	if a > b {
 		return a
 	} else {

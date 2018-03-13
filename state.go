@@ -15,11 +15,11 @@ type State struct {
 func NewState(rule Rule) *State {
 	state := State{
 		Rules: rule,
-		Board: make([][]*Piece, rows),
+		Board: make([][]*Piece, rule.Rows),
 	}
 
-	for i := 0; i < rows; i++ {
-		state.Board[i] = make([]Piece, columns)
+	for i := 0; i < rule.Rows; i++ {
+		state.Board[i] = make([]*Piece, rule.Columns)
 	}
 
 	return &state
@@ -31,7 +31,7 @@ func (state *State) String() string {
 	for i := 0; i < state.Rules.Rows; i++ {
 		for j := 0; j < state.Rules.Columns; j++ {
 			if state.Board[i][j] != nil {
-				if state.Board[i][j].Side {
+				if state.Board[i][j].Direction.Row == 1 {
 					str.WriteRune('x')
 				} else {
 					str.WriteRune('o')
@@ -82,19 +82,4 @@ func (state *State) MovePiece(from *Coordinate, to *Coordinate) error {
 	return nil
 }
 
-func (state *State) PossibleMoves(piece *Piece) map[*Coordinate][]*Coordinate {
-	diagonalMoves := piece.Diagonal()
-
-	for k, v := range set {
-		if v == nil {
-			continue
-		}
-
-		err := state.ValidateMove()
-	}
-
-	if state.Rules.ConsecutiveJumps {
-	}
-
-	return set
-}
+//func (state *State) PossibleMoves(piece *Piece) map[*Coordinate][]*Coordinate {}
