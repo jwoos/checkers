@@ -187,6 +187,8 @@ func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[*Coordinate]*
 
 				moves[direction] = jump
 			}
+
+			continue
 		}
 
 		if !jumpOnly {
