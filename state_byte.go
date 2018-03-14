@@ -1,7 +1,6 @@
 package checkers
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -57,19 +56,19 @@ func NewStateByte(rule Rule, instantiateBoard bool) *StateByte {
 			bottomMap = &state.Black
 		}
 
-		var coordinate *Coordinate
+		var coordinate Coordinate
 		for i := 0; i < rule.RowsToFill; i++ {
 			for j := 0; j < rule.Columns; j++ {
 				if ((rule.Rows - 1 - i) % 2) == (j % 2) {
 					coordinate = NewCoordinate(rule.Rows-1-i, j)
 					state.Board[rule.Rows-1-i][j] = top
-					(*topMap)[*coordinate] = true
+					(*topMap)[coordinate] = true
 				}
 
 				if (i % 2) == (j % 2) {
 					coordinate = NewCoordinate(i, j)
 					state.Board[i][j] = bottom
-					(*bottomMap)[*coordinate] = true
+					(*bottomMap)[coordinate] = true
 				}
 			}
 		}
@@ -159,7 +158,7 @@ func (state *StateByte) CopyBoard() [][]byte {
 	return arr
 }
 
-func (state *StateByte) CheckBound(coord *Coordinate) bool {
+func (state *StateByte) CheckBound(coord Coordinate) bool {
 	okay := true
 
 	if coord.Row < 0 || coord.Row >= state.Rules.Rows {
@@ -174,33 +173,35 @@ func (state *StateByte) CheckBound(coord *Coordinate) bool {
 }
 
 func (state *StateByte) Move(move Move) {
-	fmt.Println(state)
 	state.Board[move.From.Row][move.From.Column] = BLANK
 	state.Board[move.To.Row][move.To.Column] = state.Turn
-	fmt.Println(state)
 
 	if state.Turn == WHITE {
-		delete(state.White, *(move.From))
-		state.White[*(move.To)] = true
+		delete(state.White, move.From)
+		state.White[move.To] = true
 	} else {
-		delete(state.Black, *(move.From))
-		state.Black[*(move.To)] = true
+		delete(state.Black, move.From)
+		state.Black[move.To] = true
 	}
 
 	// there was a jump
-	if move.Jump != nil {
+	if move.Jump != NO_JUMP {
 		state.Board[move.Jump.Row][move.Jump.Column] = BLANK
 		if state.Turn == BLACK {
-			delete(state.White, *(move.Jump))
+			delete(state.White, move.Jump)
 		} else {
-			delete(state.Black, *(move.Jump))
+			delete(state.Black, move.Jump)
 		}
 	}
 
-	state.Turn ^= BLACK
+	if state.Turn == BLACK {
+		state.Turn = WHITE
+	} else {
+		state.Turn = BLACK
+	}
 }
 
-func (state *StateByte) Validate(from *Coordinate, to *Coordinate) error {
+func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
 	piece := state.Board[from.Row][from.Column]
 
 	if state.Turn != piece {
@@ -244,7 +245,7 @@ func (state *StateByte) Validate(from *Coordinate, to *Coordinate) error {
 	return nil
 }
 
-func (state *StateByte) PossibleMoves(from *Coordinate) map[Coordinate]Move {
+func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	moves := make(map[Coordinate]Move)
 	var dir int
 	if state.Rules.First == state.Board[from.Row][from.Column] {
@@ -261,7 +262,7 @@ func (state *StateByte) PossibleMoves(from *Coordinate) map[Coordinate]Move {
 		}
 	}
 
-	directions := []*Coordinate{
+	directions := []Coordinate{
 		NewCoordinate(dir, 1),
 		NewCoordinate(dir, -1),
 	}
@@ -281,13 +282,13 @@ func (state *StateByte) PossibleMoves(from *Coordinate) map[Coordinate]Move {
 					continue
 				}
 
-				moves[*jump] = NewMove(from, jump, target)
+				moves[jump] = NewMove(from, jump, target)
 			}
 
 			continue
 		}
 
-		moves[*target] = NewMove(from, target, nil)
+		moves[target] = NewMove(from, target, NO_JUMP)
 	}
 
 	return moves

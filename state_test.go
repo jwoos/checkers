@@ -92,8 +92,8 @@ func TestPossibleMoves(t *testing.T) {
 			}
 
 			for _, v := range moves {
-				if v.Jump != nil {
-					innerT.Errorf("%v expected nil for jump but got %s", v, v.Jump)
+				if v.Jump != NO_JUMP {
+					innerT.Errorf("%v expected nil for jump but got %v", v, v.Jump)
 				}
 			}
 		},
@@ -131,7 +131,7 @@ func TestMove(t *testing.T) {
 	t.Run(
 		"Moves piece",
 		func(innerT *testing.T) {
-			state.Move(state.Board[2][0], NewMove(state.Board[2][0].Coord, NewCoordinate(3, 1), nil))
+			state.Move(state.Board[2][0], NewMove(state.Board[2][0].Coord, NewCoordinate(3, 1), NO_JUMP))
 
 			if state.Board[2][0] != nil {
 				innerT.Errorf("Piece still at original location %v", state)

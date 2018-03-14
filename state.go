@@ -65,7 +65,7 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 		}
 
 		var piece *Piece
-		var coordinate *Coordinate
+		var coordinate Coordinate
 		for i := 0; i < rule.RowsToFill; i++ {
 			for j := 0; j < rule.Columns; j++ {
 				if ((rule.Rows - 1 - i) % 2) == (j % 2) {
@@ -147,13 +147,12 @@ func (state *State) GoString() string {
  *}
  */
 
-func (state *State) ValidateMove(piece *Piece, dir *Coordinate) error {
-	coord := piece.Coord.Copy()
-	coord.ApplyCoordinate(dir)
+func (state *State) ValidateMove(piece *Piece, dir Coordinate) error {
+	coord := piece.Coord.ApplyCoordinate(dir)
 	return state.ValidateMoveTo(piece, coord)
 }
 
-func (state *State) ValidateMoveTo(piece *Piece, to *Coordinate) error {
+func (state *State) ValidateMoveTo(piece *Piece, to Coordinate) error {
 	from := piece.Coord
 
 	if state.Turn != piece.Type {
@@ -189,7 +188,7 @@ func (state *State) ValidateMoveTo(piece *Piece, to *Coordinate) error {
 	return nil
 }
 
-func (state *State) MovePiece(piece *Piece, application *Coordinate) error {
+func (state *State) MovePiece(piece *Piece, application Coordinate) error {
 	err := state.ValidateMove(piece, application)
 	if err != nil {
 		return err
@@ -204,7 +203,7 @@ func (state *State) MovePiece(piece *Piece, application *Coordinate) error {
 	return nil
 }
 
-func (state *State) MovePieceTo(piece *Piece, to *Coordinate) error {
+func (state *State) MovePieceTo(piece *Piece, to Coordinate) error {
 	err := state.ValidateMoveTo(piece, to)
 	if err != nil {
 		return err
@@ -225,7 +224,7 @@ func (state *State) Move(piece *Piece, move Move) {
 	state.Board[piece.Coord.Row][piece.Coord.Column] = piece
 
 	// there was a jump
-	if move.Jump != nil {
+	if move.Jump != NO_JUMP {
 		if state.Turn == BLACK {
 			delete(state.White, state.Board[move.Jump.Row][move.Jump.Column])
 		} else {
@@ -237,7 +236,7 @@ func (state *State) Move(piece *Piece, move Move) {
 	state.Turn ^= BLACK
 }
 
-func (state *State) CheckBound(coord *Coordinate) bool {
+func (state *State) CheckBound(coord Coordinate) bool {
 	okay := true
 
 	if coord.Row < 0 || coord.Row >= state.Rules.Rows {
@@ -259,7 +258,7 @@ func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[Coordinate]Mo
 		dir = 1
 	}
 
-	directions := []*Coordinate{
+	directions := []Coordinate{
 		NewCoordinate(dir, 1),
 		NewCoordinate(dir, -1),
 	}
@@ -285,14 +284,14 @@ func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[Coordinate]Mo
 					continue
 				}
 
-				moves[*jump] = NewMove(piece.Coord, jump, target)
+				moves[jump] = NewMove(piece.Coord, jump, target)
 			}
 
 			continue
 		}
 
 		if !jumpOnly {
-			moves[*target] = NewMove(piece.Coord, target, nil)
+			moves[target] = NewMove(piece.Coord, target, NO_JUMP)
 		}
 	}
 

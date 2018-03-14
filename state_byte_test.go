@@ -76,8 +76,8 @@ func TestCopy(t *testing.T) {
 		func(innerT *testing.T) {
 			newState := state.Copy()
 
-			delete(newState.White, *NewCoordinate(0, 0))
-			delete(newState.Black, *NewCoordinate(7, 7))
+			delete(newState.White, NewCoordinate(0, 0))
+			delete(newState.Black, NewCoordinate(7, 7))
 
 			if reflect.DeepEqual(state.White, newState.White) {
 				innerT.Errorf("States are equal: %v\n%v", state.White, newState.White)

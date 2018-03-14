@@ -9,41 +9,21 @@ type Coordinate struct {
 	Column int
 }
 
-func NewCoordinate(row int, column int) *Coordinate {
-	coord := Coordinate{
+func NewCoordinate(row int, column int) Coordinate {
+	return Coordinate{
 		Row:    row,
 		Column: column,
 	}
-
-	return &coord
 }
 
-func (coord *Coordinate) Copy() *Coordinate {
-	return &Coordinate{coord.Row, coord.Column}
-}
-
-func (coord *Coordinate) String() string {
+func (coord Coordinate) String() string {
 	return fmt.Sprintf("(%d, %d)", coord.Row, coord.Column)
 }
 
-func (coord *Coordinate) GoString() string {
+func (coord Coordinate) GoString() string {
 	return coord.String()
 }
 
-func (coord *Coordinate) SetCoordinate(source *Coordinate) {
-	coord.Row = source.Row
-	coord.Column = source.Column
-}
-
-func (coord *Coordinate) ApplyCoordinate(source *Coordinate) {
-	coord.Row += source.Row
-	coord.Column += source.Column
-}
-
-func (coord *Coordinate) SetRow(row int) {
-	coord.Row = row
-}
-
-func (coord *Coordinate) SetColumn(column int) {
-	coord.Column = column
+func (a Coordinate) ApplyCoordinate(b Coordinate) Coordinate {
+	return NewCoordinate(a.Row + b.Row, a.Column + b.Column)
 }

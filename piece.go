@@ -5,13 +5,13 @@ import (
 )
 
 type Piece struct {
-	Coord     *Coordinate
+	Coord     Coordinate
 	Direction int
 	Type      byte
 	King      bool
 }
 
-func NewPiece(king bool, coord *Coordinate, t byte, direction int) *Piece {
+func NewPiece(king bool, coord Coordinate, t byte, direction int) *Piece {
 	piece := Piece{
 		Coord:     coord,
 		Direction: direction,
@@ -57,12 +57,12 @@ func (piece *Piece) SetDirection(direction int) {
 	piece.Direction = direction
 }
 
-func (piece *Piece) SetCoordinate(coord *Coordinate) {
+func (piece *Piece) SetCoordinate(coord Coordinate) {
 	piece.Coord = coord
 }
 
-func (piece *Piece) ApplyCoordinate(coord *Coordinate) {
-	piece.Coord.ApplyCoordinate(coord)
+func (piece *Piece) ApplyCoordinate(coord Coordinate) {
+	piece.Coord = piece.Coord.ApplyCoordinate(coord)
 }
 
 func (piece *Piece) SetRow(row int) {
