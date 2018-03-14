@@ -1,6 +1,7 @@
 package checkers
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -8,16 +9,16 @@ type StateByte struct {
 	Rules Rule
 
 	Board [][]byte
-	Turn byte
+	Turn  byte
 	White map[Coordinate]bool
 	Black map[Coordinate]bool
 }
 
 func NewStateByte(rule Rule, instantiateBoard bool) *StateByte {
 	state := StateByte{
-		Rules:      rule,
-		Board:      make([][]byte, rule.Rows),
-		Turn:       rule.First,
+		Rules: rule,
+		Board: make([][]byte, rule.Rows),
+		Turn:  rule.First,
 		White: make(map[Coordinate]bool),
 		Black: make(map[Coordinate]bool),
 	}
@@ -103,6 +104,33 @@ func (state *StateByte) GoString() string {
 	return state.String()
 }
 
+func (state *StateByte) Copy() *StateByte {
+	newState := NewStateByte(state.Rules, false)
+
+	newState.Turn = state.Turn
+
+	var row int
+	var column int
+
+	for coord, _ := range state.White {
+		row = coord.Row
+		column = coord.Column
+
+		newState.Board[row][column] = WHITE
+		newState.White[coord] = true
+	}
+
+	for coord, _ := range state.Black {
+		row = coord.Row
+		column = coord.Column
+
+		newState.Board[row][column] = BLACK
+		newState.Black[coord] = true
+	}
+
+	return newState
+}
+
 func (state *StateByte) CopyBoard() [][]byte {
 	arr := make([][]byte, state.Rules.Rows)
 	rule := state.Rules
@@ -146,8 +174,10 @@ func (state *StateByte) CheckBound(coord *Coordinate) bool {
 }
 
 func (state *StateByte) Move(move Move) {
+	fmt.Println(state)
 	state.Board[move.From.Row][move.From.Column] = BLANK
 	state.Board[move.To.Row][move.To.Column] = state.Turn
+	fmt.Println(state)
 
 	if state.Turn == WHITE {
 		delete(state.White, *(move.From))
@@ -237,7 +267,7 @@ func (state *StateByte) PossibleMoves(from *Coordinate) map[Coordinate]Move {
 	}
 
 	for _, direction := range directions {
-		target := NewCoordinate(from.Row + direction.Row, from.Column + direction.Column)
+		target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
 
 		if !state.CheckBound(target) {
 			continue

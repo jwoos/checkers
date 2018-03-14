@@ -23,9 +23,9 @@ type State struct {
 
 func NewState(rule Rule, instantiateBoard bool) *State {
 	state := State{
-		Rules:      rule,
-		Board:      make([][]*Piece, rule.Rows),
-		Turn:       rule.First,
+		Rules: rule,
+		Board: make([][]*Piece, rule.Rows),
+		Turn:  rule.First,
 		White: make(map[*Piece]bool),
 		Black: make(map[*Piece]bool),
 	}
