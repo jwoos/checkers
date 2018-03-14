@@ -1,6 +1,7 @@
 package checkers
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -81,19 +82,28 @@ func (state *StateByte) String() string {
 	var str strings.Builder
 
 	for i := state.Rules.Columns - 1; i >= 0; i-- {
+		str.WriteString(fmt.Sprintf(" %d | ", i))
 		for j := 0; j < state.Rules.Columns; j++ {
 			if state.Board[i][j] != BLANK {
 				if state.Board[i][j] == BLACK {
-					str.WriteRune('b')
+					str.WriteString(" b ")
 				} else {
-					str.WriteRune('w')
+					str.WriteString(" w ")
 				}
 			} else {
-				str.WriteRune('.')
+				str.WriteString(" . ")
 			}
 		}
 
 		str.WriteRune('\n')
+	}
+
+	str.WriteString("     ")
+	str.WriteString(strings.Repeat("---", state.Rules.Columns))
+	str.WriteRune('\n')
+	str.WriteString("     ")
+	for i := 0; i < state.Rules.Columns; i++ {
+		str.WriteString(fmt.Sprintf(" %d ", i))
 	}
 
 	return str.String()
@@ -293,3 +303,5 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 
 	return moves
 }
+
+//func (state *StateByte) 
