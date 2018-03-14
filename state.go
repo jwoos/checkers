@@ -36,7 +36,7 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 
 		if rule.First == BLACK {
 			blackSide = rule.Side
-			redSide = redSide ^ BLACK
+			redSide = blackSide ^ BLACK
 		} else {
 			redSide = rule.Side
 			blackSide = redSide ^ BLACK
@@ -53,8 +53,8 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 		for i := 0; i < rule.RowsToFill; i++ {
 			for j := 0; j < rule.Columns; j++ {
 				if ((rule.Rows - 1 - i) % 2) == (j % 2) {
-					coordinate := NewCoordinate(rule.Rows - 1 - i, j)
-					state.Board[rule.Rows - 1 - i][j] = NewPiece(false, coordinate, top, -1)
+					coordinate := NewCoordinate(rule.Rows-1-i, j)
+					state.Board[rule.Rows-1-i][j] = NewPiece(false, coordinate, top, -1)
 				}
 
 				if (i % 2) == (j % 2) {
@@ -94,49 +94,67 @@ func (state *State) GoString() string {
 	return state.String()
 }
 
-func (state *State) ValideMove(piece *Piece, to *Coordinate) bool {
-	//from := piece.Coord
+func (state *State) ValidateMove(piece *Piece, dir *Coordinate) error {
+	coord := piece.Coord.Copy()
+	coord.ApplyCoordinate(dir)
+	return state.ValidateMoveTo(piece, coord)
+}
+
+func (state *State) ValidateMoveTo(piece *Piece, to *Coordinate) error {
+	from := piece.Coord
+
+	if state.Turn != piece.Type {
+		return NewMovementError(ERROR_MOVE_TURN)
+	}
+
+	if (abs(from.Row-to.Row) > 2) || (abs(from.Column-to.Column) > 2) {
+		return NewMovementError(ERROR_MOVE_INVALID)
+	}
 
 	// check bounds
 	if to.Row < 0 || to.Row > state.Rules.Columns {
-		return false
+		return NewMovementError(ERROR_MOVE_BOUNDS)
 	}
 
 	if to.Column < 0 || to.Column > state.Rules.Rows {
-		return false
+		return NewMovementError(ERROR_MOVE_BOUNDS)
 	}
 
 	// check the space is empty
 	if state.Board[to.Row][to.Column] != nil {
-		return false
+		return NewMovementError(ERROR_MOVE_OCCUPIED)
 	}
 
 	// check that if there is a valid captured state, it's taken
-	return true
+	return nil
 }
 
 func (state *State) MovePiece(piece *Piece, application *Coordinate) error {
-	err := state.ValideMove(piece, application)
-	if err {
-		return NewMovementError("Invalid move")
+	err := state.ValidateMove(piece, application)
+	if err != nil {
+		return err
 	}
 
 	state.Board[piece.Coord.Row][piece.Coord.Column] = nil
 	piece.ApplyCoordinate(application)
 	state.Board[piece.Coord.Row][piece.Coord.Column] = piece
 
+	state.Turn ^= BLACK
+
 	return nil
 }
 
 func (state *State) MovePieceTo(piece *Piece, to *Coordinate) error {
-	err := state.ValideMove(piece, to)
-	if err {
-		return NewMovementError("Invalid move")
+	err := state.ValidateMoveTo(piece, to)
+	if err != nil {
+		return err
 	}
 
 	state.Board[piece.Coord.Row][piece.Coord.Column] = nil
 	piece.SetCoordinate(to)
 	state.Board[piece.Coord.Row][piece.Coord.Column] = piece
+
+	state.Turn ^= BLACK
 
 	return nil
 }

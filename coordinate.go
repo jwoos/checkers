@@ -18,6 +18,10 @@ func NewCoordinate(row int, column int) *Coordinate {
 	return &coord
 }
 
+func (coord *Coordinate) Copy() *Coordinate {
+	return &Coordinate{coord.Row, coord.Column}
+}
+
 func (coord *Coordinate) String() string {
 	return fmt.Sprintf("(%d, %d)", coord.Row, coord.Column)
 }

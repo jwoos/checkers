@@ -1,16 +1,11 @@
 package checkers
 
-type BoundsError struct {
-	Message string
-}
-
-func NewBoundsError(message string) BoundsError {
-	return BoundsError{Message: message}
-}
-
-func (err BoundsError) Error() string {
-	return err.Message
-}
+const (
+	ERROR_MOVE_TURN     string = "Wrong piece to move"
+	ERROR_MOVE_INVALID  string = "Invalid move"
+	ERROR_MOVE_BOUNDS   string = "Move out of bounds"
+	ERROR_MOVE_OCCUPIED string = "Space is occupied"
+)
 
 type MovementError struct {
 	Message string
