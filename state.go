@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	RED   int = iota
+	WHITE   int = iota
 	BLACK int = iota
 )
 
@@ -30,23 +30,23 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 
 	if instantiateBoard {
 		var blackSide int
-		var redSide int
+		var whiteSide int
 		var top int
 		var bottom int
 
 		if rule.First == BLACK {
 			blackSide = rule.Side
-			redSide = blackSide ^ BLACK
+			whiteSide = blackSide ^ BLACK
 		} else {
-			redSide = rule.Side
-			blackSide = redSide ^ BLACK
+			whiteSide = rule.Side
+			blackSide = whiteSide ^ BLACK
 		}
 
 		if blackSide == TOP {
 			top = BLACK
-			bottom = RED
+			bottom = WHITE
 		} else {
-			top = RED
+			top = WHITE
 			bottom = BLACK
 		}
 

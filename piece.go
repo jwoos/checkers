@@ -26,8 +26,8 @@ func (piece *Piece) String() string {
 	var side string
 	var pieceType string
 
-	if piece.Type == RED {
-		side = "red"
+	if piece.Type == WHITE {
+		side = "white"
 	} else {
 		side = "black"
 	}
