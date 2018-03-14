@@ -15,13 +15,18 @@ type State struct {
 
 	Board [][]*Piece
 	Turn  int
+
+	White map[*Piece]bool
+	Black map[*Piece]bool
 }
 
 func NewState(rule Rule, instantiateBoard bool) *State {
 	state := State{
-		Rules: rule,
-		Board: make([][]*Piece, rule.Rows),
-		Turn:  rule.First,
+		Rules:      rule,
+		Board:      make([][]*Piece, rule.Rows),
+		Turn:       rule.First,
+		White: make(map[*Piece]bool),
+		Black: make(map[*Piece]bool),
 	}
 
 	for i := 0; i < rule.Rows; i++ {
@@ -29,6 +34,8 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 	}
 
 	if instantiateBoard {
+		var topMap *map[*Piece]bool
+		var bottomMap *map[*Piece]bool
 		var blackSide int
 		var whiteSide int
 		var top int
@@ -45,21 +52,33 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 		if blackSide == TOP {
 			top = BLACK
 			bottom = WHITE
+
+			topMap = &state.Black
+			bottomMap = &state.White
 		} else {
 			top = WHITE
 			bottom = BLACK
+
+			topMap = &state.White
+			bottomMap = &state.Black
 		}
 
+		var piece *Piece
+		var coordinate *Coordinate
 		for i := 0; i < rule.RowsToFill; i++ {
 			for j := 0; j < rule.Columns; j++ {
 				if ((rule.Rows - 1 - i) % 2) == (j % 2) {
-					coordinate := NewCoordinate(rule.Rows-1-i, j)
-					state.Board[rule.Rows-1-i][j] = NewPiece(false, coordinate, top, -1)
+					coordinate = NewCoordinate(rule.Rows-1-i, j)
+					piece = NewPiece(false, coordinate, top, -1)
+					state.Board[rule.Rows-1-i][j] = piece
+					(*topMap)[piece] = true
 				}
 
 				if (i % 2) == (j % 2) {
-					coordinate := NewCoordinate(i, j)
-					state.Board[i][j] = NewPiece(false, coordinate, bottom, 1)
+					coordinate = NewCoordinate(i, j)
+					piece = NewPiece(false, coordinate, bottom, 1)
+					state.Board[i][j] = piece
+					(*bottomMap)[piece] = true
 				}
 			}
 		}
@@ -77,7 +96,7 @@ func (state *State) String() string {
 				if state.Board[i][j].Type == BLACK {
 					str.WriteRune('b')
 				} else {
-					str.WriteRune('r')
+					str.WriteRune('w')
 				}
 			} else {
 				str.WriteRune('.')
@@ -179,6 +198,11 @@ func (state *State) Move(piece *Piece, move Move) {
 
 	// there was a jump
 	if move.Jump != nil {
+		if state.Turn == BLACK {
+			delete(state.White, state.Board[move.Jump.Row][move.Jump.Column])
+		} else {
+			delete(state.Black, state.Board[move.Jump.Row][move.Jump.Column])
+		}
 		state.Board[move.Jump.Row][move.Jump.Column] = nil
 	}
 
