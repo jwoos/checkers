@@ -103,6 +103,34 @@ func (state *StateByte) GoString() string {
 	return state.String()
 }
 
+func (state *StateByte) CopyBoard() [][]byte {
+	arr := make([][]byte, state.Rules.Rows)
+	rule := state.Rules
+
+	for i := 0; i < rule.Rows; i++ {
+		arr[i] = make([]byte, rule.Columns)
+	}
+
+	var row int
+	var column int
+
+	for coord, _ := range state.White {
+		row = coord.Row
+		column = coord.Column
+
+		arr[row][column] = WHITE
+	}
+
+	for coord, _ := range state.Black {
+		row = coord.Row
+		column = coord.Column
+
+		arr[row][column] = BLACK
+	}
+
+	return arr
+}
+
 func (state *StateByte) CheckBound(coord *Coordinate) bool {
 	okay := true
 
@@ -187,10 +215,6 @@ func (state *StateByte) Validate(from *Coordinate, to *Coordinate) error {
 }
 
 func (state *StateByte) PossibleMoves(from *Coordinate) map[Coordinate]Move {
-	if state.Board[from.Row][from.Column] == BLANK {
-		return nil
-	}
-
 	moves := make(map[Coordinate]Move)
 	var dir int
 	if state.Rules.First == state.Board[from.Row][from.Column] {
@@ -213,7 +237,7 @@ func (state *StateByte) PossibleMoves(from *Coordinate) map[Coordinate]Move {
 	}
 
 	for _, direction := range directions {
-		target := NewCoordinate(from.Row, from.Column)
+		target := NewCoordinate(from.Row + direction.Row, from.Column + direction.Column)
 
 		if !state.CheckBound(target) {
 			continue
