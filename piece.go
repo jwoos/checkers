@@ -7,11 +7,11 @@ import (
 type Piece struct {
 	Coord     *Coordinate
 	Direction int
-	Type      int
+	Type      byte
 	King      bool
 }
 
-func NewPiece(king bool, coord *Coordinate, t int, direction int) *Piece {
+func NewPiece(king bool, coord *Coordinate, t byte, direction int) *Piece {
 	piece := Piece{
 		Coord:     coord,
 		Direction: direction,
@@ -49,7 +49,7 @@ func (piece *Piece) SetKing(king bool) {
 	piece.King = king
 }
 
-func (piece *Piece) SetType(t int) {
+func (piece *Piece) SetType(t byte) {
 	piece.Type = t
 }
 

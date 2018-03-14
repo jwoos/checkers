@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	WHITE int = iota
-	BLACK int = iota
+	BLANK byte = iota
+	WHITE byte = iota
+	BLACK byte = iota
 )
 
 // row major
@@ -14,7 +15,7 @@ type State struct {
 	Rules Rule
 
 	Board [][]*Piece
-	Turn  int
+	Turn  byte
 
 	White map[*Piece]bool
 	Black map[*Piece]bool
@@ -38,15 +39,15 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 		var bottomMap *map[*Piece]bool
 		var blackSide int
 		var whiteSide int
-		var top int
-		var bottom int
+		var top byte
+		var bottom byte
 
 		if rule.First == BLACK {
 			blackSide = rule.Side
-			whiteSide = blackSide ^ BLACK
+			whiteSide = blackSide ^ int(BLACK)
 		} else {
 			whiteSide = rule.Side
-			blackSide = whiteSide ^ BLACK
+			blackSide = whiteSide ^ int(BLACK)
 		}
 
 		if blackSide == TOP {
@@ -85,6 +86,33 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 	}
 
 	return &state
+}
+
+func (state *State) ByteArray() [][]byte {
+	arr := make([][]byte, state.Rules.Rows)
+	rule := state.Rules
+
+	for i := 0; i < rule.Rows; i++ {
+		arr[i] = make([]byte, rule.Columns)
+	}
+
+	var row int
+	var column int
+	for piece, _ := range state.White {
+		row = piece.Coord.Row
+		column = piece.Coord.Column
+
+		arr[row][column] = WHITE
+	}
+
+	for piece, _ := range state.Black {
+		row = piece.Coord.Row
+		column = piece.Coord.Column
+
+		arr[row][column] = BLACK
+	}
+
+	return arr
 }
 
 func (state *State) String() string {

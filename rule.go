@@ -10,7 +10,7 @@ type Rule struct {
 	Columns int
 
 	// who goes first
-	First int
+	First byte
 
 	// to which direction does first go
 	Side int
@@ -28,7 +28,7 @@ type Rule struct {
 	LoseOnNoMoves bool
 }
 
-func NewRule(rows int, columns int, first int, side int, fill int, king bool, multiple bool, moveLoss bool) Rule {
+func NewRule(rows int, columns int, first byte, side int, fill int, king bool, multiple bool, moveLoss bool) Rule {
 	rule := Rule{
 		Rows:             rows,
 		Columns:          columns,
