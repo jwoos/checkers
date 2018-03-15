@@ -25,5 +25,5 @@ func (coord Coordinate) GoString() string {
 }
 
 func (a Coordinate) ApplyCoordinate(b Coordinate) Coordinate {
-	return NewCoordinate(a.Row + b.Row, a.Column + b.Column)
+	return NewCoordinate(a.Row+b.Row, a.Column+b.Column)
 }

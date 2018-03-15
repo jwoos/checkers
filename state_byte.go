@@ -318,11 +318,11 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	return moves
 }
 
-func (state *StateByte) PossibleMovesAll() map[Move]bool {
+func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 	moves := make(map[Move]bool)
 
 	var dir int
-	if state.Rules.First == state.Turn {
+	if state.Rules.First == turn {
 		if state.Rules.Side == TOP {
 			dir = -1
 		} else {
@@ -342,7 +342,7 @@ func (state *StateByte) PossibleMovesAll() map[Move]bool {
 	}
 
 	var pieces map[Coordinate]bool
-	if state.Turn == WHITE {
+	if turn == WHITE {
 		pieces = state.White
 	} else {
 		pieces = state.Black
@@ -359,7 +359,7 @@ func (state *StateByte) PossibleMovesAll() map[Move]bool {
 			}
 
 			if state.Board[target.Row][target.Column] != BLANK {
-				if state.Board[target.Row][target.Column] != state.Turn {
+				if state.Board[target.Row][target.Column] != turn {
 					jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
 
 					if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column] != BLANK {
@@ -390,8 +390,30 @@ func (state *StateByte) PossibleMovesAll() map[Move]bool {
 	return moves
 }
 
-func (state *StateByte) GameEnd() byte {
+func (state *StateByte) GameEnd() (bool, byte) {
+	whiteMoves := state.PossibleMovesAll(WHITE)
+	blackMoves := state.PossibleMovesAll(BLACK)
 
+	if len(whiteMoves) == 0 && len(blackMoves) == 0 {
+		whitePieces := len(state.White)
+		blackPieces := len(state.Black)
 
-	return BLANK
+		if whitePieces > blackPieces {
+			return true, WHITE
+		} else if blackPieces > whitePieces {
+			return true, BLACK
+		} else {
+			return true, BLANK
+		}
+	}
+
+	return false, BLANK
+}
+
+func (state *StateByte) Skip() {
+	if state.Turn == BLACK {
+		state.Turn = WHITE
+	} else {
+		state.Turn = BLACK
+	}
 }
