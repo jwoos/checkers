@@ -277,6 +277,8 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 		NewCoordinate(dir, -1),
 	}
 
+	jumpPresent := false
+
 	for _, direction := range directions {
 		target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
 
@@ -292,16 +294,104 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 					continue
 				}
 
+				jumpPresent = true
 				moves[jump] = NewMove(from, jump, target)
 			}
 
 			continue
 		}
 
-		moves[target] = NewMove(from, target, NO_JUMP)
+		if !jumpPresent {
+			moves[target] = NewMove(from, target, NO_JUMP)
+		}
+	}
+
+	// jump must be taken
+	if jumpPresent {
+		for key, move := range moves {
+			if move.Jump == NO_JUMP {
+				delete(moves, key)
+			}
+		}
 	}
 
 	return moves
 }
 
-//func (state *StateByte) 
+func (state *StateByte) PossibleMovesAll() map[Move]bool {
+	moves := make(map[Move]bool)
+
+	var dir int
+	if state.Rules.First == state.Turn {
+		if state.Rules.Side == TOP {
+			dir = -1
+		} else {
+			dir = 1
+		}
+	} else {
+		if state.Rules.Side == TOP {
+			dir = 1
+		} else {
+			dir = -1
+		}
+	}
+
+	directions := []Coordinate{
+		NewCoordinate(dir, 1),
+		NewCoordinate(dir, -1),
+	}
+
+	var pieces map[Coordinate]bool
+	if state.Turn == WHITE {
+		pieces = state.White
+	} else {
+		pieces = state.Black
+	}
+
+	jumpPresent := false
+
+	for _, direction := range directions {
+		for from, _ := range pieces {
+			target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
+
+			if !state.CheckBound(target) {
+				continue
+			}
+
+			if state.Board[target.Row][target.Column] != BLANK {
+				if state.Board[target.Row][target.Column] != state.Turn {
+					jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
+
+					if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column] != BLANK {
+						continue
+					}
+
+					jumpPresent = true
+					moves[NewMove(from, jump, target)] = true
+				}
+
+				continue
+			}
+
+			if !jumpPresent {
+				moves[NewMove(from, target, NO_JUMP)] = true
+			}
+		}
+	}
+
+	if jumpPresent {
+		for move, _ := range moves {
+			if move.Jump == NO_JUMP {
+				delete(moves, move)
+			}
+		}
+	}
+
+	return moves
+}
+
+func (state *StateByte) GameEnd() byte {
+
+
+	return BLANK
+}
