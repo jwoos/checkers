@@ -228,6 +228,24 @@ func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
 
 	// TODO check the jump is over the opponent's pieces
 
+	var dir int
+	if state.Rules.First == state.Turn {
+		if state.Rules.Side == TOP {
+			dir = -1
+		} else {
+			dir = 1
+		}
+	} else {
+		if state.Rules.Side == TOP {
+			dir = 1
+		} else {
+			dir = -1
+		}
+	}
+	if to.Row - from.Row != dir {
+		return NewMovementError(ERROR_MOVE_BACK)
+	}
+
 	if abs(from.Row-to.Row) != abs(from.Column-to.Column) {
 		return NewMovementError(ERROR_MOVE_INVALID)
 	}
