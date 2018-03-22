@@ -140,34 +140,6 @@ func (state *StateByte) Copy() *StateByte {
 	return newState
 }
 
-func (state *StateByte) CopyBoard() [][]byte {
-	arr := make([][]byte, state.Rules.Rows)
-	rule := state.Rules
-
-	for i := 0; i < rule.Rows; i++ {
-		arr[i] = make([]byte, rule.Columns)
-	}
-
-	var row int
-	var column int
-
-	for coord, _ := range state.White {
-		row = coord.Row
-		column = coord.Column
-
-		arr[row][column] = WHITE
-	}
-
-	for coord, _ := range state.Black {
-		row = coord.Row
-		column = coord.Column
-
-		arr[row][column] = BLACK
-	}
-
-	return arr
-}
-
 func (state *StateByte) CheckBound(coord Coordinate) bool {
 	okay := true
 
