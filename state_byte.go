@@ -113,6 +113,7 @@ func (state *StateByte) GoString() string {
 	return state.String()
 }
 
+// copy the state
 func (state *StateByte) Copy() *StateByte {
 	newState := NewStateByte(state.Rules, false)
 
@@ -121,6 +122,7 @@ func (state *StateByte) Copy() *StateByte {
 	var row int
 	var column int
 
+	// copy over white pieces
 	for coord, _ := range state.White {
 		row = coord.Row
 		column = coord.Column
@@ -129,6 +131,7 @@ func (state *StateByte) Copy() *StateByte {
 		newState.White[coord] = true
 	}
 
+	// copy over black pieces
 	for coord, _ := range state.Black {
 		row = coord.Row
 		column = coord.Column
@@ -140,13 +143,16 @@ func (state *StateByte) Copy() *StateByte {
 	return newState
 }
 
+// check if the coordinate is out of bounds
 func (state *StateByte) CheckBound(coord Coordinate) bool {
 	okay := true
 
+	// row is between 0 and rows - 1
 	if coord.Row < 0 || coord.Row >= state.Rules.Rows {
 		okay = false
 	}
 
+	// column is between 0 and columns - 1
 	if coord.Column < 0 || coord.Column >= state.Rules.Columns {
 		okay = false
 	}
@@ -154,6 +160,7 @@ func (state *StateByte) CheckBound(coord Coordinate) bool {
 	return okay
 }
 
+// apply a move
 func (state *StateByte) Move(move Move) {
 	state.Board[move.From.Row][move.From.Column] = BLANK
 	state.Board[move.To.Row][move.To.Column] = state.Turn
@@ -177,6 +184,7 @@ func (state *StateByte) Move(move Move) {
 		}
 	}
 
+	// change turn
 	if state.Turn == BLACK {
 		state.Turn = WHITE
 	} else {
@@ -246,13 +254,16 @@ func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
 	return nil
 }
 
+// return all possible moves for a given coordinate
 func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	moves := make(map[Coordinate]Move)
 
+	// blank can't move
 	if state.Board[from.Row][from.Column] == BLANK {
 		return moves
 	}
 
+	// determine direction
 	var dir int
 	if state.Rules.First == state.Board[from.Row][from.Column] {
 		if state.Rules.Side == TOP {
@@ -275,6 +286,7 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 
 	jumpPresent := false
 
+	// for each direction check if there is a normal move or jump available
 	for _, direction := range directions {
 		target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
 
@@ -318,6 +330,7 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 	moves := make(map[Move]bool)
 
+	// determine to which direction it's moving
 	var dir int
 	if state.Rules.First == turn {
 		if state.Rules.Side == TOP {
@@ -360,6 +373,7 @@ func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 				if state.Board[target.Row][target.Column] != turn {
 					jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
 
+					// if it's out of bound or the jump destination is taken up
 					if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column] != BLANK {
 						continue
 					}
@@ -421,13 +435,16 @@ func (state *StateByte) Skip() {
 	}
 }
 
+// return all possible capture moves for a given coordinate
 func (state *StateByte) PossibleCaptureMoves(from Coordinate) map[Coordinate]Move {
 	moves := make(map[Coordinate]Move)
 
+	// can't move a blank
 	if state.Board[from.Row][from.Column] == BLANK {
 		return moves
 	}
 
+	// determine direction
 	var dir int
 	if state.Rules.First == state.Board[from.Row][from.Column] {
 		if state.Rules.Side == TOP {
@@ -448,6 +465,7 @@ func (state *StateByte) PossibleCaptureMoves(from Coordinate) map[Coordinate]Mov
 		NewCoordinate(dir, -1),
 	}
 
+	// for each direction check if there is a normal move or jump available
 	for _, direction := range directions {
 		target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
 
@@ -473,9 +491,11 @@ func (state *StateByte) PossibleCaptureMoves(from Coordinate) map[Coordinate]Mov
 	return moves
 }
 
+// return all possible capture moves
 func (state *StateByte) PossibleCaptureMovesAll(turn byte) map[Move]bool {
 	moves := make(map[Move]bool)
 
+	// determine direction
 	var dir int
 	if state.Rules.First == turn {
 		if state.Rules.Side == TOP {
