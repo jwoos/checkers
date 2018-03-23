@@ -317,3 +317,117 @@ func (state *State) PossibleMoves(from Coordinate) map[Coordinate]Move {
 
 	return moves
 }
+
+func (state *State) PossibleMovesAll(turn byte) map[Move]bool {
+	moves := make(map[Move]bool)
+
+	var dir int
+	if state.Rules.First == turn {
+		if state.Rules.Side == TOP {
+			dir = -1
+		} else {
+			dir = 1
+		}
+	} else {
+		if state.Rules.Side == TOP {
+			dir = 1
+		} else {
+			dir = -1
+		}
+	}
+
+	pawnDirections := []Coordinate{
+		NewCoordinate(dir, 1),
+		NewCoordinate(dir, -1),
+	}
+
+	kingDirections := []Coordinate{
+		NewCoordinate(dir, 1),
+		NewCoordinate(dir, -1),
+		NewCoordinate(-dir, 1),
+		NewCoordinate(-dir, -1),
+	}
+
+	var pieces map[Coordinate]Piece
+	if turn == WHITE {
+		pieces = state.White
+	} else {
+		pieces = state.Black
+	}
+
+	var directions []Coordinate
+	jumpPresent := false
+
+	for from, piece := range pieces {
+		if piece.King {
+			directions = kingDirections
+		} else {
+			directions = pawnDirections
+		}
+
+		for _, direction := range directions {
+			target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
+
+			if !state.CheckBound(target) {
+				continue
+			}
+
+			if state.Board[target.Row][target.Column].Side != BLANK {
+				if state.Board[target.Row][target.Column].Side != turn {
+					jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
+
+					if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column].Side != BLANK {
+						continue
+					}
+
+					jumpPresent = true
+					moves[NewMove(from, jump, target)] = true
+				}
+
+				continue
+			}
+
+			if !jumpPresent {
+				moves[NewMove(from, target, NO_JUMP)] = true
+			}
+		}
+	}
+
+	if jumpPresent {
+		for move, _ := range moves {
+			if move.Jump == NO_JUMP {
+				delete(moves, move)
+			}
+		}
+	}
+
+	return moves
+}
+
+func (state *State) GameEnd() (bool, byte) {
+	whiteMoves := state.PossibleMovesAll(WHITE)
+	blackMoves := state.PossibleMovesAll(BLACK)
+
+	if len(whiteMoves) == 0 && len(blackMoves) == 0 {
+		whitePieces := len(state.White)
+		blackPieces := len(state.Black)
+
+		if whitePieces > blackPieces {
+			return true, WHITE
+		} else if blackPieces > whitePieces {
+			return true, BLACK
+		} else {
+			return true, BLANK
+		}
+	}
+
+	return false, BLANK
+}
+
+func (state *State) Skip() {
+	if state.Turn == BLACK {
+		state.Turn = WHITE
+	} else {
+		state.Turn = BLACK
+	}
+}
