@@ -5,28 +5,22 @@ import (
 )
 
 type Piece struct {
-	Coord     Coordinate
-	Direction int
-	Type      byte
+	Side      byte
 	King      bool
 }
 
-func NewPiece(king bool, coord Coordinate, t byte, direction int) *Piece {
-	piece := Piece{
-		Coord:     coord,
-		Direction: direction,
-		Type:      t,
-		King:      king,
+func NewPiece(king bool, side byte) Piece {
+	return Piece{
+		Side: side,
+		King: king,
 	}
-
-	return &piece
 }
 
-func (piece *Piece) String() string {
+func (piece Piece) String() string {
 	var side string
 	var pieceType string
 
-	if piece.Type == WHITE {
+	if piece.Side == WHITE {
 		side = "white"
 	} else {
 		side = "black"
@@ -38,37 +32,9 @@ func (piece *Piece) String() string {
 		pieceType = "pawn"
 	}
 
-	return fmt.Sprintf("%s %s %#v", side, pieceType, piece.Coord)
+	return fmt.Sprintf("%s %s", side, pieceType)
 }
 
-func (piece *Piece) GoString() string {
+func (piece Piece) GoString() string {
 	return piece.String()
-}
-
-func (piece *Piece) SetKing(king bool) {
-	piece.King = king
-}
-
-func (piece *Piece) SetType(t byte) {
-	piece.Type = t
-}
-
-func (piece *Piece) SetDirection(direction int) {
-	piece.Direction = direction
-}
-
-func (piece *Piece) SetCoordinate(coord Coordinate) {
-	piece.Coord = coord
-}
-
-func (piece *Piece) ApplyCoordinate(coord Coordinate) {
-	piece.Coord = piece.Coord.ApplyCoordinate(coord)
-}
-
-func (piece *Piece) SetRow(row int) {
-	piece.Coord.Row = row
-}
-
-func (piece *Piece) SetColumn(column int) {
-	piece.Coord.Column = column
 }

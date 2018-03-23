@@ -169,6 +169,7 @@ func (state *StateByte) Move(move Move) {
 	// there was a jump
 	if move.Jump != NO_JUMP {
 		state.Board[move.Jump.Row][move.Jump.Column] = BLANK
+
 		if state.Turn == BLACK {
 			delete(state.White, move.Jump)
 		} else {

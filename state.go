@@ -1,6 +1,7 @@
 package checkers
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -17,8 +18,8 @@ type State struct {
 	Board [][]Piece
 	Turn  byte
 
-	White map[Piece]bool
-	Black map[Piece]bool
+	White map[Coordinate]Piece
+	Black map[Coordinate]Piece
 }
 
 func NewState(rule Rule, instantiateBoard bool) *State {
@@ -26,8 +27,8 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 		Rules: rule,
 		Board: make([][]Piece, rule.Rows),
 		Turn:  rule.First,
-		White: make(map[Piece]bool),
-		Black: make(map[Piece]bool),
+		White: make(map[Coordinate]Piece),
+		Black: make(map[Coordinate]Piece),
 	}
 
 	for i := 0; i < rule.Rows; i++ {
@@ -35,8 +36,8 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 	}
 
 	if instantiateBoard {
-		var topMap *map[Piece]bool
-		var bottomMap *map[Piece]bool
+		var topMap *map[Coordinate]Piece
+		var bottomMap *map[Coordinate]Piece
 		var blackSide int
 		var whiteSide int
 		var top byte
@@ -64,22 +65,22 @@ func NewState(rule Rule, instantiateBoard bool) *State {
 			bottomMap = &state.Black
 		}
 
-		var piece *Piece
+		var piece Piece
 		var coordinate Coordinate
 		for i := 0; i < rule.RowsToFill; i++ {
 			for j := 0; j < rule.Columns; j++ {
 				if ((rule.Rows - 1 - i) % 2) == (j % 2) {
 					coordinate = NewCoordinate(rule.Rows-1-i, j)
-					piece = NewPiece(false, coordinate, top, -1)
+					piece = NewPiece(false, top)
 					state.Board[rule.Rows-1-i][j] = piece
-					(*topMap)[piece] = true
+					(*topMap)[coordinate] = piece
 				}
 
 				if (i % 2) == (j % 2) {
 					coordinate = NewCoordinate(i, j)
-					piece = NewPiece(false, coordinate, bottom, 1)
+					piece = NewPiece(false, bottom)
 					state.Board[i][j] = piece
-					(*bottomMap)[piece] = true
+					(*bottomMap)[coordinate] = piece
 				}
 			}
 		}
@@ -94,8 +95,8 @@ func (state *State) String() string {
 	for i := state.Rules.Columns - 1; i >= 0; i-- {
 		str.WriteString(fmt.Sprintf(" %d | ", i))
 		for j := 0; j < state.Rules.Columns; j++ {
-			if state.Board[i][j].Type != BLANK {
-				if state.Board[i][j].Type == BLACK {
+			if state.Board[i][j].Side != BLANK {
+				if state.Board[i][j].Side == BLACK {
 					str.WriteString(" b ")
 				} else {
 					str.WriteString(" w ")
@@ -131,31 +132,81 @@ func (state *State) Copy() *State {
 	var row int
 	var column int
 
-	for piece, _ := range state.White {
-		newState.Board[piece.Coord.Row][piece.Coord.Column] = piece
-		newState.White[piece] = true
+	for coord, _ := range state.White {
+		row = coord.Row
+		column = coord.Column
+
+		newState.Board[row][column] = state.Board[row][column]
+		newState.White[coord] = state.Board[row][column]
 	}
 
 	for coord, _ := range state.Black {
-		newState.Board[piece.Coord.Row][piece.Coord.Column] = piece
-		newState.White[piece] = true
+		row = coord.Row
+		column = coord.Column
+
+		newState.Board[row][column] = state.Board[row][column]
+		newState.Black[coord] = state.Board[row][column]
 	}
 
 	return newState
 }
 
-func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
+func (state *State) CheckBound(coord Coordinate) bool {
+	okay := true
+
+	if coord.Row < 0 || coord.Row >= state.Rules.Rows {
+		okay = false
+	}
+
+	if coord.Column < 0 || coord.Column >= state.Rules.Columns {
+		okay = false
+	}
+
+	return okay
+}
+
+func (state *State) Move(move Move) {
+	state.Board[move.To.Row][move.To.Column] = state.Board[move.From.Row][move.From.Column]
+	state.Board[move.From.Row][move.From.Column] = Piece{}
+
+	if state.Turn == WHITE {
+		state.White[move.To] = state.White[move.From]
+		delete(state.White, move.From)
+	} else {
+		state.Black[move.To] = state.Black[move.From]
+		delete(state.Black, move.From)
+	}
+
+	// there was a jump
+	if move.Jump != NO_JUMP {
+		state.Board[move.Jump.Row][move.Jump.Column] = Piece{}
+
+		if state.Turn == BLACK {
+			delete(state.White, move.Jump)
+		} else {
+			delete(state.Black, move.Jump)
+		}
+	}
+
+	if state.Turn == BLACK {
+		state.Turn = WHITE
+	} else {
+		state.Turn = BLACK
+	}
+}
+
+func (state *State) Validate(from Coordinate, to Coordinate) error {
 	piece := state.Board[from.Row][from.Column]
 
-	if state.Turn != piece {
+	if state.Turn != piece.Side {
 		return NewMovementError(ERROR_MOVE_TURN)
 	}
 
-	if piece == BLANK {
+	if piece.Side == BLANK {
 		return NewMovementError(ERROR_MOVE_BLANK)
 	}
 
-	if piece != state.Turn {
+	if piece.Side != state.Turn {
 		return NewMovementError(ERROR_MOVE_WRONG)
 	}
 
@@ -197,7 +248,7 @@ func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
 	}
 
 	// check the space is empty
-	if state.Board[to.Row][to.Column] != BLANK {
+	if state.Board[to.Row][to.Column].Side != BLANK {
 		return NewMovementError(ERROR_MOVE_OCCUPIED)
 	}
 
@@ -206,44 +257,21 @@ func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
 	return nil
 }
 
-func (state *State) Move(piece Piece, move Move) {
-	state.Board[piece.Coord.Row][piece.Coord.Column] = nil
-	piece.SetCoordinate(move.To)
-	state.Board[piece.Coord.Row][piece.Coord.Column] = piece
-
-	// there was a jump
-	if move.Jump != NO_JUMP {
-		if state.Turn == BLACK {
-			delete(state.White, state.Board[move.Jump.Row][move.Jump.Column])
-		} else {
-			delete(state.Black, state.Board[move.Jump.Row][move.Jump.Column])
-		}
-		state.Board[move.Jump.Row][move.Jump.Column] = nil
-	}
-
-	state.Turn ^= BLACK
-}
-
-func (state *State) CheckBound(coord Coordinate) bool {
-	okay := true
-
-	if coord.Row < 0 || coord.Row >= state.Rules.Rows {
-		okay = false
-	}
-
-	if coord.Column < 0 || coord.Column >= state.Rules.Columns {
-		okay = false
-	}
-
-	return okay
-}
-
-func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[Coordinate]Move {
+func (state *State) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	moves := make(map[Coordinate]Move)
-	dir := piece.Direction
-
-	if dir == 0 {
-		dir = 1
+	var dir int
+	if state.Rules.First == state.Board[from.Row][from.Column].Side {
+		if state.Rules.Side == TOP {
+			dir = -1
+		} else {
+			dir = 1
+		}
+	} else {
+		if state.Rules.Side == TOP {
+			dir = 1
+		} else {
+			dir = -1
+		}
 	}
 
 	directions := []Coordinate{
@@ -251,12 +279,15 @@ func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[Coordinate]Mo
 		NewCoordinate(dir, -1),
 	}
 
+	piece := state.Board[from.Row][from.Column]
 	if piece.King {
 		directions = append(directions, NewCoordinate(-dir, 1), NewCoordinate(-dir, -1))
 	}
 
+	jumpPresent := false
+
 	for _, direction := range directions {
-		target := NewCoordinate(piece.Coord.Row+direction.Row, piece.Coord.Column+direction.Column)
+		target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
 
 		// check out of bounds
 		if !state.CheckBound(target) {
@@ -264,22 +295,23 @@ func (state *State) PossibleMoves(piece *Piece, jumpOnly bool) map[Coordinate]Mo
 		}
 
 		// check the space is empty
-		if state.Board[target.Row][target.Column] != nil {
-			if (state.Board[target.Row][target.Column].Type ^ piece.Type) == 1 {
+		if state.Board[target.Row][target.Column].Side != BLANK {
+			if state.Board[target.Row][target.Column].Side != state.Turn {
 				jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
 
-				if !state.CheckBound(jump) {
+				if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column].Side != BLANK {
 					continue
 				}
 
-				moves[jump] = NewMove(piece.Coord, jump, target)
+				jumpPresent = true
+				moves[jump] = NewMove(from, jump, target)
 			}
 
 			continue
 		}
 
-		if !jumpOnly {
-			moves[target] = NewMove(piece.Coord, target, NO_JUMP)
+		if !jumpPresent {
+			moves[target] = NewMove(from, target, NO_JUMP)
 		}
 	}
 
