@@ -1,8 +1,9 @@
 package checkers
 
+// TODO change to directional values -1 and 1
 const (
-	BOTTOM int = iota
-	TOP    int = iota
+	BOTTOM byte = iota
+	TOP    byte = iota
 )
 
 type Rule struct {
@@ -13,7 +14,10 @@ type Rule struct {
 	First byte
 
 	// to which direction does first go
-	Side int
+	Side byte
+
+	Order []byte
+	Direction []byte
 
 	// how many rows should be filled
 	RowsToFill int
@@ -28,16 +32,32 @@ type Rule struct {
 	LoseOnNoMoves bool
 }
 
-func NewRule(rows int, columns int, first byte, side int, fill int, king bool, multiple bool, moveLoss bool) Rule {
+func NewRule(rows int, columns int, first byte, side byte, fill int, king bool, multiple bool, moveLoss bool) Rule {
 	rule := Rule{
 		Rows:             rows,
 		Columns:          columns,
+		Order: make([]byte, 2),
+		Direction: make([]byte, 3),
 		First:            first,
 		Side:             side,
 		RowsToFill:       fill,
 		BecomesKing:      king,
 		ConsecutiveJumps: multiple,
 		LoseOnNoMoves:    moveLoss,
+	}
+
+	if first == BLACK {
+		rule.Direction[BLACK] = side
+		rule.Direction[WHITE] = side ^ TOP
+
+		rule.Order[0] = BLACK
+		rule.Order[1] = WHITE
+	} else {
+		rule.Direction[WHITE] = side
+		rule.Direction[BLACK] = side ^ TOP
+
+		rule.Order[0] = BLACK
+		rule.Order[1] = WHITE
 	}
 
 	return rule
