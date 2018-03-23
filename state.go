@@ -259,6 +259,11 @@ func (state *State) Validate(from Coordinate, to Coordinate) error {
 
 func (state *State) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	moves := make(map[Coordinate]Move)
+
+	if state.Board[from.Row][from.Column].Side == BLANK {
+		return moves
+	}
+
 	var dir int
 	if state.Rules.First == state.Board[from.Row][from.Column].Side {
 		if state.Rules.Side == TOP {
@@ -280,6 +285,7 @@ func (state *State) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	}
 
 	piece := state.Board[from.Row][from.Column]
+
 	if piece.King {
 		directions = append(directions, NewCoordinate(-dir, 1), NewCoordinate(-dir, -1))
 	}

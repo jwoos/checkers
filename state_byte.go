@@ -248,6 +248,11 @@ func (state *StateByte) Validate(from Coordinate, to Coordinate) error {
 
 func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	moves := make(map[Coordinate]Move)
+
+	if state.Board[from.Row][from.Column] == BLANK {
+		return moves
+	}
+
 	var dir int
 	if state.Rules.First == state.Board[from.Row][from.Column] {
 		if state.Rules.Side == TOP {
