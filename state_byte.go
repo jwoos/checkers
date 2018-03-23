@@ -314,6 +314,7 @@ func (state *StateByte) PossibleMoves(from Coordinate) map[Coordinate]Move {
 	return moves
 }
 
+// return all the possible moves
 func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 	moves := make(map[Move]bool)
 
@@ -346,8 +347,9 @@ func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 
 	jumpPresent := false
 
-	for _, direction := range directions {
-		for from, _ := range pieces {
+	// for each piece try all directions to see if there is a possible move
+	for from, _ := range pieces {
+		for _, direction := range directions {
 			target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
 
 			if !state.CheckBound(target) {
@@ -375,6 +377,7 @@ func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 		}
 	}
 
+	// if there was a jump move, remove any moves that are not jumps
 	if jumpPresent {
 		for move, _ := range moves {
 			if move.Jump == NO_JUMP {
@@ -386,14 +389,17 @@ func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 	return moves
 }
 
+// check for game end
 func (state *StateByte) GameEnd() (bool, byte) {
 	whiteMoves := state.PossibleMovesAll(WHITE)
 	blackMoves := state.PossibleMovesAll(BLACK)
 
+	// if they both have no moves left over
 	if len(whiteMoves) == 0 && len(blackMoves) == 0 {
 		whitePieces := len(state.White)
 		blackPieces := len(state.Black)
 
+		// determine by number of pieces left
 		if whitePieces > blackPieces {
 			return true, WHITE
 		} else if blackPieces > whitePieces {
@@ -406,10 +412,121 @@ func (state *StateByte) GameEnd() (bool, byte) {
 	return false, BLANK
 }
 
+// change turns
 func (state *StateByte) Skip() {
 	if state.Turn == BLACK {
 		state.Turn = WHITE
 	} else {
 		state.Turn = BLACK
 	}
+}
+
+func (state *StateByte) PossibleCaptureMoves(from Coordinate) map[Coordinate]Move {
+	moves := make(map[Coordinate]Move)
+
+	if state.Board[from.Row][from.Column] == BLANK {
+		return moves
+	}
+
+	var dir int
+	if state.Rules.First == state.Board[from.Row][from.Column] {
+		if state.Rules.Side == TOP {
+			dir = -1
+		} else {
+			dir = 1
+		}
+	} else {
+		if state.Rules.Side == TOP {
+			dir = 1
+		} else {
+			dir = -1
+		}
+	}
+
+	directions := []Coordinate{
+		NewCoordinate(dir, 1),
+		NewCoordinate(dir, -1),
+	}
+
+	for _, direction := range directions {
+		target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
+
+		if !state.CheckBound(target) {
+			continue
+		}
+
+		if state.Board[target.Row][target.Column] != BLANK {
+			if state.Board[target.Row][target.Column] != state.Turn {
+				jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
+
+				if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column] != BLANK {
+					continue
+				}
+
+				moves[jump] = NewMove(from, jump, target)
+			}
+
+			continue
+		}
+	}
+
+	return moves
+}
+
+func (state *StateByte) PossibleCaptureMovesAll(turn byte) map[Move]bool {
+	moves := make(map[Move]bool)
+
+	var dir int
+	if state.Rules.First == turn {
+		if state.Rules.Side == TOP {
+			dir = -1
+		} else {
+			dir = 1
+		}
+	} else {
+		if state.Rules.Side == TOP {
+			dir = 1
+		} else {
+			dir = -1
+		}
+	}
+
+	directions := []Coordinate{
+		NewCoordinate(dir, 1),
+		NewCoordinate(dir, -1),
+	}
+
+	var pieces map[Coordinate]bool
+	if turn == WHITE {
+		pieces = state.White
+	} else {
+		pieces = state.Black
+	}
+
+	// for each piece try all directions to see if there is a possible move
+	for from, _ := range pieces {
+		for _, direction := range directions {
+			target := NewCoordinate(from.Row+direction.Row, from.Column+direction.Column)
+
+			if !state.CheckBound(target) {
+				continue
+			}
+
+			if state.Board[target.Row][target.Column] != BLANK {
+				if state.Board[target.Row][target.Column] != turn {
+					jump := NewCoordinate(target.Row+direction.Row, target.Column+direction.Column)
+
+					if !state.CheckBound(jump) || state.Board[jump.Row][jump.Column] != BLANK {
+						continue
+					}
+
+					moves[NewMove(from, jump, target)] = true
+				}
+
+				continue
+			}
+		}
+	}
+
+	return moves
 }
