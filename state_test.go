@@ -21,7 +21,7 @@ func TestNewState(t *testing.T) {
 				innerT.Errorf("Boards are not equal: %v %v", state.Board, board)
 			}
 
-			if state.Rules != rule {
+			if !reflect.DeepEqual(state.Rules, rule) {
 				innerT.Errorf("Rules are not equal")
 			}
 		},
@@ -36,7 +36,7 @@ func TestNewState(t *testing.T) {
 				innerT.Errorf("Boards are equal: %v %v", state.Board, board)
 			}
 
-			if state.Rules != rule {
+			if !reflect.DeepEqual(state.Rules, rule) {
 				innerT.Errorf("Rules are not equal")
 			}
 		},

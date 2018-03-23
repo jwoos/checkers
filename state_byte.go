@@ -30,17 +30,17 @@ func NewStateByte(rule Rule, instantiateBoard bool) *StateByte {
 	if instantiateBoard {
 		var topMap *map[Coordinate]bool
 		var bottomMap *map[Coordinate]bool
-		var blackSide int
-		var whiteSide int
+		var blackSide byte
+		var whiteSide byte
 		var top byte
 		var bottom byte
 
 		if rule.First == BLACK {
 			blackSide = rule.Side
-			whiteSide = blackSide ^ int(BLACK)
+			whiteSide = blackSide ^ BLACK
 		} else {
 			whiteSide = rule.Side
-			blackSide = whiteSide ^ int(BLACK)
+			blackSide = whiteSide ^ BLACK
 		}
 
 		if blackSide == TOP {
