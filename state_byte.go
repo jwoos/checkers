@@ -405,6 +405,13 @@ func (state *StateByte) PossibleMovesAll(turn byte) map[Move]bool {
 
 // check for game end
 func (state *StateByte) GameEnd() (bool, byte) {
+	// there are no more pieces for a player
+	if len(state.White) == 0 {
+		return true, BLACK
+	} else if len(state.Black) == 0 {
+		return true, WHITE
+	}
+
 	whiteMoves := state.PossibleMovesAll(WHITE)
 	blackMoves := state.PossibleMovesAll(BLACK)
 
